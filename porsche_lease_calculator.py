@@ -8,7 +8,7 @@ def load_lease_data(file_path):
 def get_base_residual(df, year, model):
     """Retrieve base residual value for given inputs."""
     try:
-        if 'Lease Lookup' not in df:
+        if 'Miles' not in df:
             st.write("Error: 'Lease Lookup' sheet not found in Excel file.")
             return None
         
