@@ -31,26 +31,29 @@ def calculate_residual(file_path, year, model, term, mileage):
     df = load_lease_data(file_path)
     base_residual = get_base_residual(df, year, model, term)
     mileage_adjustment = adjust_residual_for_miles(mileage)
-
+    
     if isinstance(base_residual, (int, float)) and isinstance(mileage_adjustment, (int, float)):
         total_residual = base_residual + mileage_adjustment
     else:
         total_residual = "Error"
-
+    
     return base_residual, mileage_adjustment, total_residual
 
 def main():
     st.title("Porsche Lease Calculator")
     file_path = "Porsche_Lease_Calculator.xlsx"
-
+    
+    df = load_lease_data(file_path)
+    available_models = df["Model"].unique().tolist()
+    
     vehicle_year = st.number_input("Enter Vehicle Year", min_value=2000, max_value=2025, step=1)
-    vehicle_model = st.text_input("Enter Model")
-    lease_term = st.number_input("Enter Lease Term (Months)", min_value=12, max_value=60, step=1)
-    mileage = st.number_input("Enter Mileage", min_value=0, step=1)
-
+    vehicle_model = st.selectbox("Select Model", available_models)
+    lease_term = st.number_input(nter Lease Term (Months)", min_value=12, max_value=60, step=1)
+   "E mileage = st.number_input("Enter Mileage", min_value=0, step=1)
+    
     if st.button("Calculate Residual"):
         base_residual, mileage_adjustment, total_residual = calculate_residual(file_path, vehicle_year, vehicle_model, lease_term, mileage)
-
+        
         st.write(f"**Base Residual:** {base_residual}%")
         st.write(f"**Mileage Adjustment:** {mileage_adjustment}%")
         st.write(f"**Total Residual:** {total_residual}%")
