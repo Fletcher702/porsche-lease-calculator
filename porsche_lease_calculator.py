@@ -5,26 +5,24 @@ def load_lease_data(file_path):
     """Loads the Porsche lease residual data."""
     return pd.read_excel(file_path)
 
-def get_base_residual(df, year, model, term):
+def get_base_residual(df, year, model):
     """Retrieve base residual value for given inputs."""
     try:
-        # Ensure lease term column is treated as integer
-        df["Lease Term (Months)"] = df["Lease Term (Months)"].astype(int)
+        # Ensure lease term is fixed at 39 months
+        df = df[df["Lease Term (Months)"] == 39]
         
         # Debugging output
         st.write("Available Years:", df["Model Year"].unique().tolist())
         st.write("Available Models:", df["Model"].unique().tolist())
-        st.write("Available Lease Terms:", df["Lease Term (Months)"].unique().tolist())
         
         # Filtering data
         model_data = df[df["Model"] == model]
         year_data = model_data[model_data["Model Year"] == year]
-        residual_data = year_data[year_data["Lease Term (Months)"] == term]
         
-        if residual_data.empty:
+        if year_data.empty:
             return "Error: Residual not found"
         
-        return residual_data["Base Residual (%)"].values[0]
+        return year_data["Base Residual (%)"].values[0]
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -39,10 +37,10 @@ def adjust_residual_for_miles(miles):
     else:
         return -3  # Ensure it always returns a numeric value
 
-def calculate_residual(file_path, year, model, term, mileage):
+def calculate_residual(file_path, year, model, mileage):
     """Calculates the final residual value based on user input."""
     df = load_lease_data(file_path)
-    base_residual = get_base_residual(df, year, model, term)
+    base_residual = get_base_residual(df, year, model)
     mileage_adjustment = adjust_residual_for_miles(mileage)
     
     st.write(f"Debug: Base Residual = {base_residual}, Mileage Adjustment = {mileage_adjustment}")
@@ -63,11 +61,10 @@ def main():
     
     vehicle_year = st.number_input("Enter Vehicle Year", min_value=2000, max_value=2025, step=1)
     vehicle_model = st.selectbox("Select Model", available_models)
-    lease_term = st.number_input("Enter Lease Term (Months)", min_value=12, max_value=60, step=1)
     mileage = st.number_input("Enter Mileage", min_value=0, step=1)
     
     if st.button("Calculate Residual"):
-        base_residual, mileage_adjustment, total_residual = calculate_residual(file_path, vehicle_year, vehicle_model, lease_term, mileage)
+        base_residual, mileage_adjustment, total_residual = calculate_residual(file_path, vehicle_year, vehicle_model, mileage)
         
         st.write(f"**Base Residual:** {base_residual}%")
         st.write(f"**Mileage Adjustment:** {mileage_adjustment}%")
