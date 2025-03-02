@@ -20,11 +20,14 @@ def get_base_residual(df, year, model):
         year_data = model_data[model_data["Model Year"] == year]
         
         if year_data.empty:
-            return "Error: Residual not found"
+            st.write("Error: No matching data found for the selected model and year.")
+            return None  # Return None instead of a string error
         
-        return year_data["Base Residual (%)"].values[0]
+        residual_value = year_data["Base Residual (%)"].values[0]
+        return float(residual_value)  # Ensure it's a numeric value
     except Exception as e:
-        return f"Error: {str(e)}"
+        st.write(f"Error retrieving base residual: {str(e)}")
+        return None
 
 def adjust_residual_for_miles(miles):
     """Adjust residual based on mileage brackets."""
@@ -45,7 +48,7 @@ def calculate_residual(file_path, year, model, mileage):
     
     st.write(f"Debug: Base Residual = {base_residual}, Mileage Adjustment = {mileage_adjustment}")
     
-    if isinstance(base_residual, (int, float)) and isinstance(mileage_adjustment, (int, float)):
+    if base_residual is not None and isinstance(mileage_adjustment, (int, float)):
         total_residual = base_residual + mileage_adjustment
     else:
         total_residual = "Error: Could not calculate total residual"
