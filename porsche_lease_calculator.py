@@ -3,20 +3,20 @@ import streamlit as st
 
 def load_lease_data(file_path):
     """Loads the Porsche lease residual data."""
-    return pd.read_excel(file_path)
+    return pd.read_excel(file_path, sheet_name=None)  # Load all sheets
 
 def get_base_residual(df, year, model):
     """Retrieve base residual value for given inputs."""
     try:
-        # Ensure lease term is fixed at 39 months
-        df = df[df["Lease Term (Months)"] == 39]
+        lease_df = df['Lease Lookup']  # Ensure we reference the correct sheet
+        lease_df = lease_df[lease_df["Lease Term (Months)"] == 39]
         
         # Debugging output
-        st.write("Available Years:", df["Model Year"].unique().tolist())
-        st.write("Available Models:", df["Model"].unique().tolist())
+        st.write("Available Years:", lease_df["Model Year"].unique().tolist())
+        st.write("Available Models:", lease_df["Model"].unique().tolist())
         
         # Filtering data
-        model_data = df[df["Model"] == model]
+        model_data = lease_df[lease_df["Model"] == model]
         year_data = model_data[model_data["Model Year"] == year]
         
         if year_data.empty:
@@ -29,22 +29,32 @@ def get_base_residual(df, year, model):
         st.write(f"Error retrieving base residual: {str(e)}")
         return None
 
-def adjust_residual_for_miles(miles):
-    """Adjust residual based on mileage brackets."""
-    if miles <= 18000:
+def adjust_residual_for_miles(df, year, miles):
+    """Adjust residual based on mileage brackets from the 'Miles' sheet."""
+    try:
+        miles_df = df['Miles']  # Ensure we reference the correct sheet
+        year_data = miles_df[miles_df["Year"] == year]
+        
+        if year_data.empty:
+            st.write("Error: No mileage data found for this year.")
+            return 0  # Default to no adjustment
+        
+        # Find the correct mileage adjustment
+        adjustment_row = year_data[(year_data["B"] <= miles) & (year_data["C"] >= miles)]
+        
+        if adjustment_row.empty:
+            return 0  # Default to no adjustment if mileage is out of range
+        
+        return float(adjustment_row["D"].values[0])
+    except Exception as e:
+        st.write(f"Error retrieving mileage adjustment: {str(e)}")
         return 0
-    elif 18001 <= miles <= 24000:
-        return -1
-    elif 24001 <= miles <= 30000:
-        return -2
-    else:
-        return -3  # Ensure it always returns a numeric value
 
 def calculate_residual(file_path, year, model, mileage):
     """Calculates the final residual value based on user input."""
     df = load_lease_data(file_path)
     base_residual = get_base_residual(df, year, model)
-    mileage_adjustment = adjust_residual_for_miles(mileage)
+    mileage_adjustment = adjust_residual_for_miles(df, year, mileage)
     
     st.write(f"Debug: Base Residual = {base_residual}, Mileage Adjustment = {mileage_adjustment}")
     
@@ -60,7 +70,7 @@ def main():
     file_path = "Porsche_Lease_Calculator.xlsx"
     
     df = load_lease_data(file_path)
-    available_models = df["Model"].unique().tolist()
+    available_models = df['Lease Lookup']["Model"].unique().tolist()
     
     vehicle_year = st.number_input("Enter Vehicle Year", min_value=2000, max_value=2025, step=1)
     vehicle_model = st.selectbox("Select Model", available_models)
