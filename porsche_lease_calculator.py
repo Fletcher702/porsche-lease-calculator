@@ -37,7 +37,7 @@ def adjust_residual_for_miles(miles):
     elif 24001 <= miles <= 30000:
         return -2
     else:
-        return "N/A"  # Out of range
+        return -3  # Ensure it always returns a numeric value
 
 def calculate_residual(file_path, year, model, term, mileage):
     """Calculates the final residual value based on user input."""
@@ -45,10 +45,12 @@ def calculate_residual(file_path, year, model, term, mileage):
     base_residual = get_base_residual(df, year, model, term)
     mileage_adjustment = adjust_residual_for_miles(mileage)
     
+    st.write(f"Debug: Base Residual = {base_residual}, Mileage Adjustment = {mileage_adjustment}")
+    
     if isinstance(base_residual, (int, float)) and isinstance(mileage_adjustment, (int, float)):
         total_residual = base_residual + mileage_adjustment
     else:
-        total_residual = "Error"
+        total_residual = "Error: Could not calculate total residual"
     
     return base_residual, mileage_adjustment, total_residual
 
