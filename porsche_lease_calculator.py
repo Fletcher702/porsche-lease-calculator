@@ -9,7 +9,7 @@ def get_base_residual(df, year, model, term):
     """Retrieve base residual value for given inputs."""
     try:
         model_data = df[df["Model"] == model]
-        year_data = model_data[year_data["Model Year"] == year]
+        year_data = model_data[model_data["Model Year"] == year]
         residual = year_data[year_data["Lease Term (Months)"] == term]["Base Residual (%)"].values[0]
         return residual
     except:
@@ -48,8 +48,8 @@ def main():
     
     vehicle_year = st.number_input("Enter Vehicle Year", min_value=2000, max_value=2025, step=1)
     vehicle_model = st.selectbox("Select Model", available_models)
-    lease_term = st.number_input(nter Lease Term (Months)", min_value=12, max_value=60, step=1)
-   "E mileage = st.number_input("Enter Mileage", min_value=0, step=1)
+    lease_term = st.number_input("Enter Lease Term (Months)", min_value=12, max_value=60, step=1)
+    mileage = st.number_input("Enter Mileage", min_value=0, step=1)
     
     if st.button("Calculate Residual"):
         base_residual, mileage_adjustment, total_residual = calculate_residual(file_path, vehicle_year, vehicle_model, lease_term, mileage)
