@@ -8,6 +8,10 @@ def load_lease_data(file_path):
 def get_base_residual(df, year, model):
     """Retrieve base residual value for given inputs."""
     try:
+        if 'Lease Lookup' not in df:
+            st.write("Error: 'Lease Lookup' sheet not found in Excel file.")
+            return None
+        
         lease_df = df['Lease Lookup']  # Ensure we reference the correct sheet
         lease_df = lease_df[lease_df["Lease Term (Months)"] == 39]
         
@@ -32,6 +36,10 @@ def get_base_residual(df, year, model):
 def adjust_residual_for_miles(df, year, miles):
     """Adjust residual based on mileage brackets from the 'Miles' sheet."""
     try:
+        if 'Miles' not in df:
+            st.write("Error: 'Miles' sheet not found in Excel file.")
+            return 0
+        
         miles_df = df['Miles']  # Ensure we reference the correct sheet
         year_data = miles_df[miles_df["Year"] == year]
         
@@ -53,6 +61,10 @@ def adjust_residual_for_miles(df, year, miles):
 def calculate_residual(file_path, year, model, mileage):
     """Calculates the final residual value based on user input."""
     df = load_lease_data(file_path)
+    
+    # Debugging: Show available sheets
+    st.write("Loaded Sheets:", list(df.keys()))
+    
     base_residual = get_base_residual(df, year, model)
     mileage_adjustment = adjust_residual_for_miles(df, year, mileage)
     
@@ -70,6 +82,11 @@ def main():
     file_path = "Porsche_Lease_Calculator.xlsx"
     
     df = load_lease_data(file_path)
+    
+    if 'Lease Lookup' not in df:
+        st.write("Error: 'Lease Lookup' sheet is missing from the Excel file.")
+        return
+    
     available_models = df['Lease Lookup']["Model"].unique().tolist()
     
     vehicle_year = st.number_input("Enter Vehicle Year", min_value=2000, max_value=2025, step=1)
