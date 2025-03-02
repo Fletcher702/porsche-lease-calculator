@@ -8,12 +8,25 @@ def load_lease_data(file_path):
 def get_base_residual(df, year, model, term):
     """Retrieve base residual value for given inputs."""
     try:
+        # Ensure lease term column is treated as integer
+        df["Lease Term (Months)"] = df["Lease Term (Months)"].astype(int)
+        
+        # Debugging output
+        st.write("Available Years:", df["Model Year"].unique().tolist())
+        st.write("Available Models:", df["Model"].unique().tolist())
+        st.write("Available Lease Terms:", df["Lease Term (Months)"].unique().tolist())
+        
+        # Filtering data
         model_data = df[df["Model"] == model]
         year_data = model_data[model_data["Model Year"] == year]
-        residual = year_data[year_data["Lease Term (Months)"] == term]["Base Residual (%)"].values[0]
-        return residual
-    except:
-        return "Error: Residual not found"
+        residual_data = year_data[year_data["Lease Term (Months)"] == term]
+        
+        if residual_data.empty:
+            return "Error: Residual not found"
+        
+        return residual_data["Base Residual (%)"].values[0]
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 def adjust_residual_for_miles(miles):
     """Adjust residual based on mileage brackets."""
