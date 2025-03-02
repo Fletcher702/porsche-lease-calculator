@@ -9,7 +9,7 @@ def get_base_residual(df, year, model):
     """Retrieve base residual value for given inputs."""
     try:
         if 'Miles' not in df:
-            st.write("Error: 'Lease Lookup' sheet not found in Excel file.")
+            st.write("Error: 'Miles' sheet not found in Excel file.")
             return None
         
         lease_df = df['Lease Lookup']  # Ensure we reference the correct sheet
